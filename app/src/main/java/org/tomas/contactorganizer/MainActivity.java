@@ -6,14 +6,25 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TabHost;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity {
 
     EditText nameTxt, phoneTxt, emailTxt, addressTxt;
+    List<Contact> ContactList = new ArrayList<>();
+    ListView contactListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +34,8 @@ public class MainActivity extends ActionBarActivity {
         this.nameTxt = (EditText) findViewById(R.id.txtName);
         this.phoneTxt = (EditText) findViewById(R.id.txtPhone);
         this.emailTxt = (EditText) findViewById(R.id.txtEmail);
-        this.addressTxt = (EditText) findViewById(R.id.txtAdress);
+        this.addressTxt = (EditText) findViewById(R.id.txtAddress);
+        this.contactListView = (ListView) findViewById(R.id.listView);
         TabHost tabHost = (TabHost) findViewById(R.id.tabHost);
 
         tabHost.setup();
@@ -38,6 +50,14 @@ public class MainActivity extends ActionBarActivity {
         tabHost.addTab(tabSpec);
 
         final Button addBtn = (Button) findViewById(R.id.btnAdd);
+        addBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addContacts(nameTxt.getText().toString(), phoneTxt.getText().toString(), emailTxt.getText().toString(), addressTxt.getText().toString());
+                populateList();
+                Toast.makeText(getApplicationContext(), nameTxt.getText().toString() + " has been added to your Contacts!", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         this.nameTxt.addTextChangedListener(new TextWatcher() {
             @Override
@@ -55,6 +75,41 @@ public class MainActivity extends ActionBarActivity {
 
             }
         });
+    }
+
+    private void populateList() {
+        ArrayAdapter<Contact> adapter = new ContactListAdapter();
+        contactListView.setAdapter(adapter);
+    }
+
+    private void addContacts(String name, String phone, String email, String address) {
+        ContactList.add(new Contact(name, phone, email, address));
+    }
+
+    private class ContactListAdapter extends ArrayAdapter<Contact> {
+        public ContactListAdapter() {
+            super(MainActivity.this, R.layout.listview_item, ContactList);
+        }
+
+        @Override
+        public View getView(int position, View view, ViewGroup parent) {
+            if (view == null) {
+                view = getLayoutInflater().inflate(R.layout.listview_item, parent, false);
+            }
+
+            Contact currentContact = ContactList.get(position);
+
+            TextView name = (TextView) view.findViewById(R.id.contactName);
+            name.setText(currentContact.getName());
+            TextView phone = (TextView) view.findViewById(R.id.phoneNumber);
+            phone.setText(currentContact.getPhone());
+            TextView email = (TextView) view.findViewById(R.id.emailAddress);
+            email.setText(currentContact.getEmail());
+            TextView address = (TextView) view.findViewById(R.id.cAddress);
+            address.setText(currentContact.getAddress());
+
+            return view;
+        }
     }
 
 
